@@ -648,20 +648,73 @@ A Site-to-Site VPN is a connection between two networks over the internet, such 
 # `Simple Storage Service`
 S3 (Simple Storage Service) is a cloud storage service offered by AWS (Amazon Web Services).
 - used for backup & storage, disaster recovery, archive, static site etc.
+- Objects (files) have a Key
+    - **The key is the FULL path**:
+        - s3://my-bucket/my_file.txt
+        - s3://my-bucket/my_folder1/another_folder/my_file.txt
+    - **The key is composed of prefix + object name**
+        - s3://my-bucket/my_folder1/another_folder/my_file.txtObjects (files) have a Key
+    - **The key is the FULL path**:
+        - s3://my-bucket/my_file.txt
+        - s3://my-bucket/my_folder1/another_folder/my_file.txt
+    - **The key is composed of prefix + object name**
+        - s3://my-bucket/my_folder1/another_folder/my_file.txt
 - consits of buckets(folders) to store objects(files) Each object consists of the file itself, metadata, and a unique identifier (key).
-- Storage Classes : 
-    - Standard: Frequently accessed data.
-    - Standard IA - Infrequently accessed data
-    - Intelligent-Tiering: Data with unknown access patterns.
-    - One Zone-IA: Infrequently accessed data that doesn't need to be in multiple Availability Zones.
-    - Glacier Instant Archive : For archival data that can be retrieved in millisecond.
-    - Glacier Flexible Archive : Flexible retrieval time.
-    - Glacier Deep Archive: Lowest-cost storage for data that is rarely accessed.
-- *Access Control*: You can control who can access your S3 buckets and objects using:
-    - Bucket Policies: Permissions for bucket access.
-    - IAM Policies: Permissions granted to users or roles.
-    - ACLs (Access Control Lists): Access management on individual objects.
+
+### Amazon S3 – Security
+- User-Based
+    - IAM Policies – which API calls should be allowed for a specific user from IAM
+- Resource-Based
+    - Bucket Policies – bucket wide rules from the S3 console - allows cross account
+    - Object Access Control List (ACL) – finer grain (can be disabled)
+    - Bucket Access Control List (ACL) – less common (can be disabled)
+- *Note: an IAM principal can access an S3 object if*
+    - The user IAM permissions ALLOW it OR the resource policy ALLOWS it
+    - AND there’s no explicit DENY
+- Encryption: encrypt objects in Amazon S3 using encryption keys
+
+**S3 Bucket Policies**
+- JSON based policies
+- Resources: buckets and objects
+- Effect: Allow / Deny
+- Actions: Set of API to Allow or Deny
+- Principal: The account or user to apply the
+policy to
+
+*Use S3 bucket for policy to:*
+- Grant public access to the bucket
+- Force objects to be encrypted at upload
+- Grant access to another account (Cross
+Account)
+
+### Storage Classes : 
+- Standard: Frequently accessed data.
+- Standard IA - Infrequently accessed data
+- Intelligent-Tiering: Data with unknown access patterns.
+- One Zone-IA: Infrequently accessed data that doesn't need to be in multiple Availability Zones.
+- Glacier Instant Archive : For archival data that can be retrieved in millisecond.
+- Glacier Flexible Archive : Flexible retrieval time.
+- Glacier Deep Archive: Lowest-cost storage for data that is rarely accessed.
+- S3 can host static websites and have them accessible on the Internet
 - *Versioning*: S3 allows you to keep multiple versions of an object. When versioning is enabled, each change to an object creates a new version, so you can retrieve or restore any previous version.
+- Amazon S3 – Replication (CRR & SRR)
+    - Must enable Versioning in source and destination buckets
+    - Cross-Region Replication (CRR)
+    - Same-Region Replication (SRR)
+    - Buckets can be in different AWS accounts
+    - Copying is asynchronous
+    - Must give proper IAM permissions to S3
+    - Use cases:
+        - CRR : compliance, lower latency access, replication across accounts
+        - SRR : log aggregation, live replication between production and test accounts
+    - After you enable Replication, only new objects are replicated
+    - Optionally, you can replicate existing objects using S3 Batch Replication, Replicates existing objects and objects that failed replication
+    - For DELETE operations :
+        - Can replicate delete markers from source to target (optional setting)
+        - Deletions with a version ID are not replicated (to avoid malicious deletes)
+    - There is no “chaining” of replication :
+        - If bucket 1 has replication into bucket 2, which has replication into bucket 3
+        - Then objects created in bucket 1 are not replicated to bucket 3
 - *Lifecycle Policies*: You can set rules for automatic transition of objects to different storage classes or deletion after a specified period. This helps manage costs.
 - *Encryption*: S3 supports both server-side encryption (SSE) and client-side encryption to protect data at rest. Encryption options include SSE-S3, SSE-KMS (AWS Key Management Service), and SSE-C (customer-provided keys).
 - *Cross-Region Replication (CRR)*: CRR allows you to automatically replicate objects across different AWS regions for disaster recovery or compliance reasons.
@@ -674,3 +727,6 @@ S3 (Simple Storage Service) is a cloud storage service offered by AWS (Amazon We
 A pre-signed URL is a URL that grants temporary access to a private object stored in Amazon S3
 - Amazon S3 Access Points are a feature of Amazon S3 that simplify managing access to shared data in S3. They provide a unique DNS-compliant hostname that acts as a point of entry to a specific S3 bucket, simplifying access control when multiple applications or users need to access data in the same bucket.
 - Amazon S3 Object Lambda allows you to add custom processing to the data retrieved from Amazon S3 before it is returned to an application or user. With S3 Object Lambda, you can modify the content of an S3 object (such as applying transformations or filtering data) on-the-fly when it is requested, without modifying the underlying S3 object.
+
+# `Amazon CloudFront`
+
