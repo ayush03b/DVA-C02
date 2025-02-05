@@ -730,3 +730,143 @@ A pre-signed URL is a URL that grants temporary access to a private object store
 
 # `Amazon CloudFront`
 
+- Content Delivery Network (CDN)
+- Improves read performance, content is cached at the edge
+- 216 Point of Presence globally (edge
+locations)
+- and because the data is distributed worldwide it also gives DDoS protection , integration with shield, AWS Web Application Firewall
+- can be used for S3 buckets for distributing files and caching them at the edge
+- Origin Access Control (OAC)(**NEW**) is used in Amazon CloudFront to secure access to origins (like Amazon S3 buckets or HTTP servers).
+    - Ensures that CloudFront is the only service that can access the origin directly, blocking unauthorized requests.
+    - Uses AWS Signature Version 4 (SigV4) for request signing, ensuring secure communication between CloudFront and the origin.
+    - Enables you to set specific permissions for the CloudFront distribution to access the origin.
+    - Works with both Amazon S3 buckets and custom origins (HTTP servers like ALB, EC2, S3 static site etc), making it flexible for various use cases.
+- Origin Access Identity (OAI)(**OLD**) is a legacy feature in Amazon CloudFront. It is an identity that CloudFront uses to securely access private content stored in an Amazon S3 bucket.
+    - Secure access to S3 buckets via CloudFront
+    - Simpler, less flexible permissions
+    - Limited to basic S3 bucket access
+    - Supported but considered outdated
+
+### CloudFront vs S3 Cross Region Replication
+
+**CloudFront** :
+- Global Edge network
+- Files are cached for a TTL (maybe a day)
+- Great for static content that must be available everywhere
+**S3 Cross Region Replication** : 
+- Must be setup for each region you want replication to happen
+- Files are updated in near real-time
+- Read only
+- Great for dynamic content that needs to be available at low-latency in few regions
+
+### CloudFront Caching
+- The cache lives at each CloudFront Edge Location
+- CloudFront identifies each object in the cache using the Cache Key
+    - CloudFront Cache Key : 
+        - A unique identifier for every object in the cache
+        - By default, consists of hostname + resource portion of the URL
+        - If you have an application that serves up content that varies based on user, device, language, location…
+        - You can add other elements (HTTP headers, cookies, query strings) to the Cache Key using CloudFront Cache Policies
+- You want to maximize the Cache Hit ratio to minimize requests to the origin
+- You can invalidate part of the cache using the CreateInvalidation API
+    - In case you update the back-end origin, CloudFront doesn’t know about it and will only get the refreshed content after the TTL has expired
+    - However, you can force an entire or partial cache refresh (thus bypassing the TTL) by performing a CloudFront Invalidation
+    - You can invalidate all files (`*`) or a special path (`/images/*`)
+
+### CloudFront Cache Policies
+CloudFront Cache Policies allow you to control how Amazon CloudFront caches content at edge locations, optimizing performance and cost by customizing cache behavior. They are essential for fine-tuning content delivery and can be configured to suit your application's needs.
+- Origin Request Settings: Determines which headers, query strings, and cookies CloudFront passes to your origin.
+- TTL (Time to Live): Defines the caching duration for objects.
+- Caching Keys: Specify what parts of a request are included in the cache key, which helps CloudFront determine whether an object is a cache hit or miss.
+    - Headers
+    - Query Strings
+    - Cookies
+    - Create your own policy or use Predefined Managed Policies
+
+### CloudFront – Cache Behaviors
+With this you can Configure different settings for a given URL path pattern.
+- Example: one specific cache behavior to images/*.jpg files on your origin web server
+- Route to different kind of origins/origin groups based on the content type or path pattern
+- /images/*
+- /api/*
+- /* (default cache behavior)
+- When adding additional Cache Behaviors, the Default Cache Behavior is always the last to be processed and is always /*
+
+>CloudFront – Maximize cache hits by separating static and dynamic distributions
+*You can also use ALB as an origin for cloudfront*
+
+### CloudFront Geo Restriction 
+You can restrict who can access your distribution
+- Allowlist: Allow your users to access your content only if they're in one of the countries on a list of approved countries.
+- Blocklist: Prevent your users from accessing your content if they're in one of the
+countries on a list of banned countries.
+- The “country” is determined using a 3rd party Geo-IP database
+- Use case: Copyright Laws to control access to content
+
+### CloudFront Signed URL / Signed Cookies
+Let's say you want to distribute paid shared content to premium users over the world
+- We can use CloudFront Signed URL / Cookie. We attach a policy with:
+- Includes URL expiration
+- Includes IP ranges to access the data from
+- Trusted signers (which AWS accounts can create signed URLs)
+- How long should the URL be valid for?
+- Shared content (movie, music): make it short (a few minutes)
+- Private content (private to the user): you can make it last for years
+- Signed URL = access to individual files (one signed URL per file)
+- Signed Cookies = access to multiple files (one signed cookie for many files)
+
+### CloudFront Signed URL vs S3 Pre-Signed URL
+*CloudFront Signed URL* : 
+- Allow access to a path, no matter the origin
+- Account wide key-pair, only the root can manage it
+- Can filter by IP, path, date, expiration
+- Can leverage caching features
+
+*S3 Pre-Signed URL* : 
+- Issue a request as the person who pre-signed the URL
+- Uses the IAM key of the signing IAM principal
+- Limited lifetime
+
+### CloudFront – Field Level Encryption
+- Protect user sensitive information through application stack
+- Adds an additional layer of security along with HTTPS
+- Sensitive information encrypted at the edge close to user
+- Uses asymmetric encryption
+- Usage:
+- Specify set of fields in POST requests that you want to be encrypted (up to 10 fields)
+- Specify the public key to encrypt them
+
+---
+# CONTAINERIZATION on AWS
+- Docker is a software development platform to deploy apps
+- Apps are packaged in containers that can be run on any OS
+- Apps run the same, regardless of where they’re run
+    - Any machine
+    - No compatibility issues
+    - Predictable behavior
+    - Less work
+    - Easier to maintain and deploy
+    - Works with any language, any OS, any technology
+- Use cases: microservices architecture, lift-and-shift apps from on-premises to the AWS cloud,
+- Docker images are stored in Docker Repositories
+    - Docker Hub
+    - Amazon ECR (Amazon Elastic Container Registry)
+- To use Docker you need to make a Dockerfile that contains build instructions and that file then be used to a docker image which will be then pushed to a docker repo like dockerhub or Amazon ECR, then that image can be used to run a container.
+
+## Docker Containers Management on AWS
+- Amazon Elastic Container Service (Amazon ECS) 
+- Amazon Elastic Kubernetes Service (Amazon EKS)
+- AWS Fargate
+- Amazon ECR
+
+# `Amazon ECS` 
+## EC2 Launch Type
+- must provision & maintain the infrastructure (the EC2 instances)
+- Each EC2 Instance must run the ECS Agent to register in the ECS Cluster
+- AWS takes care of starting / stopping containers
+
+## Fargate Launch Type
+- You do not provision the infrastructure (no EC2 instances to manage)
+- You just create task definitions
+- AWS just runs ECS Tasks for you based on the CPU / RAM you need
+- To scale, just increase the number of tasks. Simple - no more EC2 instances
