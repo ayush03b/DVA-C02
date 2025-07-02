@@ -78,6 +78,9 @@
         * Savings Plan : Commit to spending(like a netflix subscription)
     * Auto Scaling Groups (ASG) to scale based on load
     * Elastic Load Balancer (ELB) to distribute traffic across instances
+    * You cannot enable encryption directly on an existing unencrypted AMI
+    * If the source AMI is unencrypted, the copy will also be unencrypted unless you explicitly choose to encrypt during the copy
+    * An IAM instance profile is a container for an IAM role that you can attach to an EC2 instance, so the instance can assume that role and get temporary credentials to access AWS services.
 
 * AWS Elastic Beanstalk : platform-as-a-service (PaaS) on AWS
     * Lets you deploy + manage web apps without worrying about the underlying infrastructure
@@ -112,7 +115,10 @@
     * Use Layers to share code/dependencies
     * Use Environment Variables to config your function
     * A Lambda function alias is like a named pointer to a specific version of a Lambda function, allowing you to manage deployments (like dev/prod) and route traffic between versions
-    	* Example : my-function:PROD 
+    	* Example : my-function:PROD
+    * lambda uses /tmp directory to store temporary files that will be deleted in the future
+    * Access the unique request ID for each invocation using : context.aws_request_id
+    * AWS Lambda Destinations let you define a success or failure target for asynchronous invocations.
 
 # CONTAINERS
 
@@ -193,8 +199,8 @@
  	* Retry strategy : Use exponential backoff + jitter(randomized delay) 	
 
 * Amazon ElastiCache : fully managed in-memory data store
-    * Redis  → caching + pub/sub + leaderboard + session store
-    * Memcached → simple, fast caching, scalable, no persistence
+    * Redis  → caching + pub/sub + leaderboard + session store, Ideal for frequently accessed, complex structured data (like leaderboard-style rankings or sorted sets)
+    * Memcached → simple, fast caching, scalable, no persistence, does NOT support encryption at rest (only in transit).
     * Boosts performance, Reduces DB strain, Used in real-time apps
     * Use ElastiCache when data is ephemeral (cache)
 
@@ -364,12 +370,17 @@
     * It handles routing, security, throttling, caching, etc.
     * Enforce authentication, rate limiting, monitoring, caching, and throttling
     * Stage Variables = key-value pairs per stage, Only for REST APIs, NOT HTTP APIs, Useful for multi-environment deployments
+    * Amazon API Gateway supports mock integrations, which allow you to:
+	* Simulate backend behavior without actually calling any backend service
+	* Configure request and response mapping templates to return predefined responses
+	* This is perfect for integration testing, development, or staging environments
 
 # SECURITY, IDENTITY AND COMPLIANCE
 
 * AWS Certificate Manager (ACM) : manage SSL/TLS certs for free, Automatically renews them, Deploys them to services like CloudFront, ALB, API Gateway, ELB, etc, 
     * Works with both public and private certificates
     * ACM checks that DNS record to verify domain ownership
+    * if u want to load certs they have to be in us-east-1 even if ur app is in another region
 
 * AWS IAM (Identity and Access Management) : control access to AWS services & resources
 
