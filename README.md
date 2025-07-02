@@ -41,6 +41,7 @@
         * Publish messages to topics
         * Fan-out those messages to multiple subscribers
         * Push alerts, updates, and notifications
+        * Subscribers can set filter policies to receive only specific messages
 
 * Amazon SQS : A fully managed message queuing service
     * [Producer] --(send msg)--> [SQS Queue] --(poll msg)--> [Consumer]
@@ -99,6 +100,7 @@
         * You must use an S3 bucket when deploying (SAM uploads artifacts there)
 
 * AWS Lambda : Serverless compute service → run code without managing servers
+    * You can only increase the memory of a lambda function
     * You write the code → Lambda handles provisioning, scaling, fault tolerance
     * Pay only for:
         * Invocation count
@@ -109,6 +111,8 @@
     * Timeout limit = 15 mins max
     * Use Layers to share code/dependencies
     * Use Environment Variables to config your function
+    * A Lambda function alias is like a named pointer to a specific version of a Lambda function, allowing you to manage deployments (like dev/prod) and route traffic between versions
+    	* Example : my-function:PROD 
 
 # CONTAINERS
 
@@ -233,6 +237,7 @@
         * Linear
         * All-at-once
     * Add pre/post hooks via Lambda functions for: Smoke testing, Logging, Feature flags
+    * In an AWS CodeDeploy in-place deployment, the hook run order is: ApplicationStop → BeforeInstall → AfterInstall → ApplicationStart → ValidateService.
 
 * AWS CodeArtifact : fully managed artifact repository service
     * It stores build artifacts like:
@@ -416,6 +421,6 @@
     * Multi-part Upload — break big files into chunks (e.g. 10 GB video)
     * Cross-Region Replication — copy files to another region auto-magically
     * Requester Pays — force downloader to pay the cost
-
+    * An S3 Access Point is a custom endpoint with its own access policy that simplifies and controls access to an S3 bucket for specific users, applications, or VPCs.
 * Amazon S3 Glacier : low-cost archival storage
 
