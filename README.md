@@ -26,6 +26,10 @@
     * Ingests events from: AWS services ,Custom apps ,SaaS apps
     * You can filter, route, and transform events to targets like: Lambda, Step Functions, SNS/SQS ,API Gateway ,Event buses (cross-account)
     * Schedule Events (CRON)
+    	* Event Bus : Pipeline for events. Types: default, custom, or partner.
+     	* Event : JSON object describing something that happened (e.g., "EC2 instance started").
+      	* Rule : Pattern that matches events and routes them to targets.
+      	* Target : Action taken when a rule matches: Lambda, SNS, SQS, Step Functions, etc.	  
     * Event Buses : 
         * Default Bus : AWS service events
         * Custom Bus : Custom app events
@@ -167,7 +171,22 @@
     * DAX = in-memory cache, microsecond reads
     * DynamoDB Streams : Triggers on item-level changes (used w/ Lambda)
     * Global Tables for multi-region sync
-    * so lsi is querying for info from partion key and sort but gsi is query for info from other attributes
+    * lsi is querying for info from partion key and sort but gsi is query for info from other attributes
+    * Transactions
+	* Supports ACID transactions
+	* Use TransactWriteItems and TransactGetItems
+	* Max 25 operations per transaction
+    * TTL (Time to Live)
+	* Automatically deletes items past a certain timestamp
+	* Doesn’t delete immediately — eventually consistent
+	* Good for expiring session data, temp data
+    * What is UnprocessedKeys?
+	* When you use BatchGetItem or BatchWriteItem, DynamoDB may not process all requested items in a single request due to:
+		* Throttling (hitting RCU/WCU limits)
+		* Item size limits or request limits
+		* Temporary internal issues
+	* Those unprocessed items are returned in the UnprocessedKeys response object.
+ 	* Retry strategy : Use exponential backoff + jitter(randomized delay) 	
 
 * Amazon ElastiCache : fully managed in-memory data store
     * Redis  → caching + pub/sub + leaderboard + session store
@@ -248,6 +267,29 @@
     * Nested Stacks : Break large templates into smaller reusable ones
     * Drift Detection : See if someone changed the infra outside the template
     * StackSets : Deploy infra across multiple accounts/regions
+ 
+      	| Section      | What it does                                             |
+	| ------------ | -------------------------------------------------------- |
+	| `Parameters` | Take user input (e.g., region, name)                     |
+	| `Resources`  | Define actual AWS resources                              |
+	| `Outputs`    | Export info like bucket name, ARNs, etc.                 |
+	| `Mappings`   | Region-specific values                                   |
+	| `Conditions` | Create resources only if condition is met                |
+	| `Metadata`   | Extra info, not used by engine                           |
+	| `Transform`  | Include macros like `AWS::Serverless-2016-10-31` for SAM |
+
+  * Useful Functions (aka "Intrinsics")
+	| Function                 | Description                            |
+	| ------------------------ | -------------------------------------- |
+	| `!Ref`                   | Reference to a parameter/resource      |
+	| `!GetAtt`                | Get attribute (like ARN) of a resource |
+	| `!Sub`                   | String substitution (`${}`)            |
+	| `!Join`                  | Join strings                           |
+	| `!If`, `!Equals`, `!Not` | Conditions                             |
+	| `!ImportValue`           | Cross-stack output import              |
+	| `!FindInMap`             | Lookup in `Mappings`                   |
+
+
 
 * Amazon CloudWatch : AWS’s monitoring + observability service
     * Metrics : Tracks performance (CPU, memory, request count, latency)
@@ -326,7 +368,7 @@
 
 * AWS IAM (Identity and Access Management) : control access to AWS services & resources
 
-* AWS Private Certificate Authority (Private CA) : create your own private certs
+* AWS Private Certificate Authority (Private CA) : create your own private certsf
 
 * AWS WAF (Web Application Firewall) : protects your web apps and APIs from common attacks by filtering HTTP/S traffic at the edge or app layer.
 
@@ -349,6 +391,10 @@
     * GetSessionToken = add MFA to sessions
 
 * AWS KMS(Key Management Service) : A managed service that enables you to easily encrypt your data. KMS provides a highly available key storage, management, and auditing solution for you to encrypt data within your own applications and control the encryption of stored data across AWS services.
+	* AWS-managed CMKs (free, automatic, limited control)(can’t modify their policies, share them across accounts, or see detailed usage logs)
+	* Customer-managed CMKs
+		* (full control, logging, rotation)
+  		* (Supports cross-account access)
 
 * AWS Secrets Manager : Fully managed AWS service for storing, managing, and rotating secrets securely. Secrets = API keys, DB creds, tokens, OAuth secrets, private keys, etc.
 
