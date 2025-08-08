@@ -64,22 +64,122 @@
 # COMPUTE
 
 - Amazon EC2 :
-    - AWS’s core service for running virtual servers (instances) in the cloud
+    - Amazon EC2 stands for Elastic Compute Cloud and provides Infrastructure as a Service (IaaS) on AWS.
+    - Types: General, Compute, Memory, Storage optimized.
+    - Bootstrapping EC2 instances is possible using User Data scripts that run once at first launch with root privileges.
     - Launch with AMI (Amazon Machine Image) → defines OS + preinstalled software
+        - An AMI (Amazon Machine Image) customizes EC2 instances by prepackaging software and configurations.
+        - AMIs can be created by AWS, customized by users, or purchased from the AWS Marketplace.
+        - Creating your own AMI results in faster boot and configuration times for EC2 instances.
+        - AMIs can be region-specific but are copyable across AWS regions to leverage global infrastructure.
+        - You cannot enable encryption directly on an existing unencrypted AMI
+        - If the source AMI is unencrypted, the copy will also be unencrypted unless you explicitly choose to encrypt during the copy
+
     - Storage types :
-        - EBS
-        - EFS
-        - Instance Store
+        - EBS(Elastic Block Storage) :
+            - EBS Volumes are network-attached storage devices that persist data beyond the lifecycle of EC2 instances.
+            - Each EBS Volume is bound to a specific availability zone and can only be attached to one instance at a time.
+            - EBS Volumes must be provisioned with capacity and IOPS in advance, and can be detached and reattached quickly for failover scenarios.
+            - The "Delete on Termination" attribute controls whether an EBS Volume is deleted when its associated EC2 instance is terminated, with root volumes deleted by default.
+            - EBS Multiattach :
+                - The Multi-Attach feature allows the same EBS volume to be attached to multiple EC2 instances within the same availability zone.
+                - This feature is available only for the io1 and io2 families of EBS volumes.
+                - Up to 16 EC2 instances can simultaneously attach to the same volume.
+                - A cluster-aware file system is required to use Multi-Attach effectively.
+
+            - EBS Snapshots :
+                - EBS Snapshots are backups of EBS volumes at any point in time and do not require detaching the volume from the EC2 instance.
+                - Snapshots can be copied across different Availability Zones and Regions, enabling volume restoration elsewhere.
+                - The EBS Snapshot Archive tier offers up to 75% cost savings but requires 24 to 72 hours for restoration.
+                - The Recycle Bin feature allows recovery of accidentally deleted snapshots with retention from one day to one year.
+                - Fast Snapshot Restore initializes snapshots fully to eliminate first-use latency but incurs significant costs.
+                - Migrating EBS volumes across AZs requires creating and restoring snapshots.
+            - EBS Volumes :
+                - EBS volumes come in six types: General Purpose(gp2, gp3), HighIOPS(io1, io2), HDD Volumes & cannot be used as boot volume(st1, and sc1).
+
+        - EC2 Instance Store
+            - EC2 Instance Store provides hardware-attached disk storage for EC2 instances, offering very high I/O performance.
+            - Instance Store storage is ephemeral and data is lost if the instance is stopped or terminated.
+            - Ideal use cases for Instance Store include buffers, caches, scratch data, or temporary content, but not long-term storage.
+            - Users are responsible for backing up and replicating data stored on Instance Store to prevent data loss.
+        - EFS(Elastic File System)
+            - Amazon EFS is a managed, scalable, and highly available network file system compatible with Linux-based EC2 instances across multiple availability zones.
+            - EFS supports different performance modes (General Purpose and Max I/O) and throughput modes (Bursting, Provisioned, Elastic) to suit various workload needs.
+            - Storage classes include Standard, Infrequent Access (EFS-IA), and Archive tiers, with lifecycle management policies to optimize cost.
+            - EFS offers multi-AZ and single-AZ deployment options, balancing availability, durability, and cost savings up to 90% with appropriate storage class choices.
+
     - Security Groups (SG) = virtual firewall (controls inbound/outbound ports)
-    - Pricing Models :
-        - On-Demand : pay-as-u-go-model
-        - Reserved : commit to 1-3 yrs, cheaper
-        - Spot : Bid for unused capacity
-        - Savings Plan : Commit to spending(like a netflix subscription)
-    - Auto Scaling Groups (ASG) to scale based on load
-    - Elastic Load Balancer (ELB) to distribute traffic across instances
-    - You cannot enable encryption directly on an existing unencrypted AMI
-    - If the source AMI is unencrypted, the copy will also be unencrypted unless you explicitly choose to encrypt during the copy
+    - Billing: On-Demand, Reserved (1–3 yr), Spot (cheap, interruptible), Savings Plans, Dedicated Host.
+    - Never enter your IAM Access Key ID and Secret Access Key directly into an EC2 instance.Use IAM roles to securely provide AWS credentials to EC2 instances.
+    - Security Groups :
+        - Firewalls controlling inbound and outbound traffic for EC2 instances.
+        - Security groups contain only allow rules and can reference IP addresses or other security groups.
+        - Default security group behavior blocks all inbound traffic and allows all outbound traffic.
+        - PORTS -> SSH:22, FTP:21, HTTP:80, HTTPS:443, RDP:3389
+        - Timeouts when connecting to EC2 instances often indicate misconfigured security group rules.
+        - Multiple security groups can be attached to an EC2 instance, and one security group can be attached to multiple instances.
+        - AWS charges for each Public IPv4 address created in your account
+
+    - LOAD BALANCING :
+        - Load balancers distribute incoming traffic across multiple backend EC2 instances to optimize resource use and improve fault tolerance.
+        - Elastic Load Balancers provide a single endpoint for users, hiding the complexity of backend instances.
+        - Health checks enable the load balancer to route traffic only to healthy instances, enhancing reliability.
+        - Application Load Balancer :
+            - Application Load Balancers (ALB) operate at layer seven, supporting HTTP and enabling routing to multiple HTTP applications across machines.
+            - ALBs support advanced routing features including path-based, host-based, query string, and header-based routing.
+            - Target groups behind ALBs can consist of EC2 instances, ECS tasks, Lambda functions, or private IP addresses.
+            - ALBs provide fixed hostnames and use headers like X-Forwarded-For to preserve client IP information during connection termination.
+        - Network Load Balancer :
+            - The Network Load Balancer (NLB) operates at layer 4, handling TCP and UDP traffic with ultra-low latency and high performance.
+            - NLB provides one static IP per availability zone, allowing assignment of elastic IPs for applications requiring fixed IP addresses.
+            - Target groups for NLB can include EC2 instances or hardcoded private IP addresses, including servers in your own data center.
+            - NLB can be placed in front of an Application Load Balancer (ALB) to combine fixed IP benefits with advanced HTTP routing capabilities.
+            - Health checks for NLB target groups support TCP, HTTP, and HTTPS protocols, enabling flexible backend monitoring.
+        - Gateway Load Balancer :
+            - Gateway Load Balancer (GWLB) is used to deploy, scale, and manage fleets of third-party network appliances in AWS.
+            - GWLB enables all network traffic to be inspected by virtual appliances such as firewalls or intrusion detection systems before reaching applications.
+            - It operates at the network layer (Layer 3), acting as a transparent gateway and load balancer distributing traffic across virtual appliances.
+            - GWLB uses the GENEVE protocol on port 6081 and supports target groups consisting of EC2 instances or private IP addresses.
+        - Sticky Sessions :
+            - Sticky sessions, or session affinity, ensure that a client’s requests are consistently routed to the same backend instance.
+            - Sticky sessions can be enabled on Classic Load Balancer, Application Load Balancer, and Network Load Balancer using cookies.
+            - There are two types of cookies for stickiness: application-based cookies generated by the target application, and duration-based cookies generated by the load balancer.
+            - Enabling stickiness may cause load imbalance if some users have very sticky sessions.
+        - Cross Zone Load Balancing :
+            - Cross zone load balancing distributes traffic evenly across all registered EC2 instances in all availability zones.
+            - Without cross zone load balancing, traffic is distributed only within each availability zone, potentially causing imbalance if EC2 instance counts differ.
+            - Application Load Balancer enables cross zone load balancing by default with no inter-AZ data charges, while Network and Gateway Load Balancers have it disabled by default and may incur charges if enabled.
+            - Classic Load Balancer is being retired and is not recommended for new deployments.
+        - SSL Certs :
+            - SSL certificates enable encrypted traffic between clients and load balancers, ensuring secure in-flight data transmission.
+            - TLS is the modern version of SSL, but the term SSL is still commonly used for simplicity.
+            - Server Name Indication (SNI) allows multiple SSL certificates to be hosted on a single load balancer, enabling support for multiple domains.
+            - Application Load Balancers (ALB) and Network Load Balancers (NLB) support multiple SSL certificates with SNI, whereas Classic Load Balancers support only one SSL certificate.
+        - Connection Draining :
+            - Connection Draining is a feature that allows instances to complete active requests before deregistration.
+            - It is called Connection Draining in Classic Load Balancers and Deregistration Delay in Application and Network Load Balancers.
+            - The draining period can be configured between 1 and 3600 seconds, with a default of 300 seconds.
+            - Setting a low draining time is suitable for short requests, while longer draining times accommodate long-lived requests but delay instance removal.
+
+    - Auto Scaling Group :
+        - Auto Scaling Groups (ASGs) automatically adjust the number of EC2 instances to match changing load.
+        - ASGs support scaling out (adding instances) and scaling in (removing instances) within defined minimum and maximum capacities.
+        - ASGs integrate with load balancers to distribute traffic and perform health checks, replacing unhealthy instances automatically.
+        - Scaling policies can be triggered by CloudWatch alarms based on metrics like average CPU utilization, enabling automatic scaling.
+        - Scaling Policies :
+            - Auto Scaling Groups (ASGs) support various scaling policies: dynamic scaling (including target tracking and step scaling), scheduled scaling, and predictive scaling.
+            - Target tracking scaling maintains a specified metric, such as CPU utilization, at a target value by automatically scaling out or in.
+            - Step scaling uses CloudWatch alarms to trigger capacity changes based on defined thresholds.
+            - Scheduled scaling anticipates scaling actions based on known usage patterns, while predictive scaling forecasts load using historical data to schedule scaling ahead of time.
+            - Common metrics for scaling include CPU utilization, RequestCountPerTarget, network in/out, and custom application-specific metrics.
+            - Scaling cooldown periods prevent rapid scaling actions by enforcing a wait time after each scaling event, typically five minutes.
+            - Using ready-to-use AMIs and enabling detailed monitoring can reduce instance startup time and improve scaling responsiveness.
+        - Instance Refresh :
+            - Instance Refresh is a feature of Auto Scaling groups that allows updating all EC2 instances using a new launch template.
+            - Instead of manually terminating instances and waiting for replacements, Instance Refresh automates the process of terminating old instances and launching new ones.
+            - You can set a minimum healthy percentage to control how many instances can be replaced at a time during the refresh.
+            - A warm-up time can be specified to ensure new instances have enough time to become ready before serving traffic.
+
     - An IAM instance profile is a container for an IAM role that you can attach to an EC2 instance, so the instance can assume that role and get temporary credentials to access AWS services.
 
 - AWS Elastic Beanstalk : platform-as-a-service (PaaS) on AWS
@@ -164,15 +264,44 @@
     - compatible with MySQL and PostgresQL
     - Aurora has replication + failover + read scaling built-in
     - Aurora Global DB enables cross-region DR
-
-- Amazon RDS : managed relational DB service
+    - Amazon RDS : managed relational DB service
     - Supports: MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Aurora
     - Handles: Backups, Patching, Monitoring ,Scaling
+    - Storage Auto Scaling allows automatic increase of storage based on usage thresholds.
+    - RDS does not provide SSH access to underlying instances, emphasizing its managed nature.
     - DB Instance : A managed database server
-    - DB Snapshot : Manual or automatic backups of your DB instance, Supports point-in-time restore
+    - DB Snapshot : Manual or automatic backups of your DB instance, Supports pointj-in-time restore
     - Read Replicas : Offload read traffic for scalability, Only available for MySQL, Postgres, MariaDB, and Aurora, Can be promoted to standalone DBs
     - Read Replicas = Scale reads, not HA
     - Multi-AZ = High Availability, not performance
+    - RDS Read Replicas are used to scale read operations with asynchronous replication, supporting up to 15 replicas across availability zones or regions.
+    - Read Replicas are eventually consistent and can be promoted to standalone databases for write operations.
+    - RDS Multi-AZ deployments provide synchronous replication for disaster recovery with automatic failover, enhancing availability but not scaling reads.
+    - Transitioning from Single AZ to Multi AZ is a zero downtime operation involving an automatic snapshot and standby database creation.
+    - Amazon Aurora is a cloud-optimized, proprietary AWS database compatible with PostgreSQL and MySQL drivers.
+    - Aurora storage automatically grows from 10GB up to 128TB, eliminating manual disk monitoring.
+    - It maintains six copies of data across three Availability Zones, ensuring high availability and self-healing.
+    - Aurora supports up to 15 read replicas with fast replication and failover, including writer and reader endpoints for seamless connection management.
+    - Data at-rest encryption on RDS and Aurora is enabled using KMS and must be defined at database launch.
+    - In-flight encryption is enabled by default, requiring clients to use AWS TLS root certificates.
+    - Database authentication supports both username/password and IAM roles for enhanced security management.
+    - Network access is controlled via security groups, and audit logs can be sent to CloudWatch Logs for long-term retention.
+    - Amazon RDS Proxy pools and shares database connections to improve efficiency and reduce resource stress.
+    - It is fully serverless, auto-scaling, and highly available across multiple Availability Zones.
+    - RDS Proxy reduces failover time by up to 66% by managing failovers transparently.
+    - It supports IAM authentication enforcement and securely stores credentials in AWS Secrets Manager.
+    - Amazon ElastiCache provides managed Redis and Memcached caching services to reduce database load for read-intensive workloads.
+    - Caches are in-memory databases offering high performance and low latency, enabling stateless applications by storing state externally.
+    - Cache hit and miss strategies optimize data retrieval, but require careful cache invalidation to maintain data consistency.
+    - Redis supports multi-availability zones, replication, persistence, and advanced data structures, while Memcached offers sharding and multi-threading but lacks replication and high availability.
+    - Caching is generally safe but may lead to eventual consistency and stale data.
+    - Lazy Loading (Cache-Aside) caches data only when requested, optimizing read performance.
+    - Write Through updates the cache immediately when the database is updated, preventing stale data but incurring write penalties.
+    - Cache Eviction and Time-to-Live (TTL) strategies manage cache size and data freshness effectively.
+    - Amazon MemoryDB for Redis is a Redis-compatible, durable, in-memory database service.
+    - Unlike Redis, which is primarily a cache with some durability, MemoryDB functions as a durable database with a Redis-compatible API.
+    - MemoryDB offers ultra-fast performance, handling over 160 million requests per second, with Multi-AZ transaction logs for data durability.
+    - It scales seamlessly from tens of gigabytes to hundreds of terabytes, ideal for web and mobile applications, online gaming, media streaming, and microservices requiring fast, durable in-memory data access.
 
 - Amazon DynamoDB : managed NoSQL key-value + document DB
     - Serverless, scalable, fast AF (single-digit ms latency)
@@ -383,11 +512,9 @@
     - identity-based-policies ->
         - Users -> long-term creds(pass, access-keys), no permission by default
         - Groups -> collection of users, user can be in multiple grps, no nested grps
-        - Policies -> JSON files that allow/deny actions on resources. types:aws managed, customer managed, inline. Explicit Deny > Allow
-          & no allow = deny.
+        - Policies -> JSON files that allow/deny actions on resources. types:aws managed, customer managed, inline. Explicit Deny > Allow & no allow = deny.
         - Roles -> Temporary crud via STS for AWS services, cross-account, federation
-    - resource-based-policies -> resource policies for AWS services that defines what services can access what services & how regardless
-      of who's using it.
+    - resource-based-policies -> resource policies for AWS services that defines what services can access what services & how regardless of who's using it.
     - IAM credentials report -> provides an account-level overview of all users and their credential statuses.
     - IAM access adviser -> offers user-level insights into granted service permissions and their last accessed times.
     - Shared Responsibility Model ->
