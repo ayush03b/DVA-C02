@@ -1,437 +1,340 @@
-# ANALYTICS 
+# Development with AWS Services (32%)
 
-* Amazon Athena : serverless query service
-    *  Lets you run SQL queries directly on data in S3
-    *  No servers to manage, no infra to provision
+## Lambda :
 
-* AmazonKinesis Data Streams (KDS) : 
-    * Use it to collect, buffer, and process real-time data (e.g., logs, metrics, events) 
-    * (you build consumers) : Lambda, Kinesis Data Analytics, KCL apps, Firehose, EC2
-    * Data is stored in shards, retained for up to 24 hrs - 365 days (configurable)
-    * Pay for shards + data volume
-
-* Amazon Kinesis Data Firehose :
-    * Ingests streaming data and automatically delivers it to S3, Redshift, OpenSearch, or 3rd party tools 
-    * fully managed
-    * Supports optional data transformation, format conversion, compression, and encryption
-
-# APPLICATION INTEGRATION 
-
-* AWS AppSync : 
-    * AppSync is a fully managed GraphQL API service that makes it easy to securely access, query, and update data from various sources.
-    * Real-time subscriptions, Offline sync support
-    * Request flexibility - Client can request exact data
-
-* AWS EventBridge : serverless event bus service that helps you connect apps using events. 
-    * Ingests events from: AWS services ,Custom apps ,SaaS apps
-    * You can filter, route, and transform events to targets like: Lambda, Step Functions, SNS/SQS ,API Gateway ,Event buses (cross-account)
-    * Schedule Events (CRON)
-    	* Event Bus : Pipeline for events. Types: default, custom, or partner.
-     	* Event : JSON object describing something that happened (e.g., "EC2 instance started").
-      	* Rule : Pattern that matches events and routes them to targets.
-      	* Target : Action taken when a rule matches: Lambda, SNS, SQS, Step Functions, etc.	  
-    * Event Buses : 
-        * Default Bus : AWS service events
-        * Custom Bus : Custom app events
-        * Partner Bus : SaaS apps (like Zendesk, Auth0)
-
-* Amazon SNS : A fully managed pub-sub (publish-subscribe) messaging service
-    * Publisher → SNS Topic → 📩 Subscribers (SQS, Lambda, Email, etc.)
-    * Lets you:
-        * Publish messages to topics
-        * Fan-out those messages to multiple subscribers
-        * Push alerts, updates, and notifications
-        * Subscribers can set filter policies to receive only specific messages
-
-* Amazon SQS : A fully managed message queuing service
-    * [Producer] --(send msg)--> [SQS Queue] --(poll msg)--> [Consumer]
-    * Producers send messages to the queue
-    * Messages stay in the queue (durable storage)
-    * Consumers poll the queue, process messages
-    * Messages auto-deleted after successful processing
-    * Queue : Standard and FIFO
-    * If the consumer fails to process, the message becomes visible again and gets retried. You can tune this timeout based on expected processing time.
-    * Msg Retention : 4 days - 14 days
-    * If a message fails X times (e.g., 5), it can be moved to a DLQ for later inspection
-    * SQS has no native filtering → that’s SNS or EventBridge’s game
-
-* AWS Step Functions : Fully managed serverless workflow orchestration service
-    * Lets you coordinate multiple AWS services (or your own code) in sequence or parallel
-    * Visual, reliable, and with built-in error handling
-    * Think of it as: “Instead of writing glue code to call Lambda → SNS → DynamoDB → S3... let Step Functions handle the flow!”
-    * Standard model for everyday tasks and express for higher throughput
-
-# COMPUTE
-
-* Amazon EC2 :  
-    * AWS’s core service for running virtual servers (instances) in the cloud
-    * Launch with AMI (Amazon Machine Image) → defines OS + preinstalled software
-    * Storage types : 
-        * EBS
-        * EFS
-        * Instance Store
-    * Security Groups (SG) = virtual firewall (controls inbound/outbound ports)
-    * Pricing Models : 
-        * On-Demand : pay-as-u-go-model
-        * Reserved : commit to 1-3 yrs, cheaper
-        * Spot : Bid for unused capacity
-        * Savings Plan : Commit to spending(like a netflix subscription)
-    * Auto Scaling Groups (ASG) to scale based on load
-    * Elastic Load Balancer (ELB) to distribute traffic across instances
-    * You cannot enable encryption directly on an existing unencrypted AMI
-    * If the source AMI is unencrypted, the copy will also be unencrypted unless you explicitly choose to encrypt during the copy
-    * An IAM instance profile is a container for an IAM role that you can attach to an EC2 instance, so the instance can assume that role and get temporary credentials to access AWS services.
-
-* AWS Elastic Beanstalk : platform-as-a-service (PaaS) on AWS
-    * Lets you deploy + manage web apps without worrying about the underlying infrastructure
-    * You provide your code → EB does the rest
-    * Deployment Structure : 
-        * Application : The container for versions and environments
-        * Environment : An actual deployed instance of your app (dev, test, prod)
-        * Environment Tier : 
-            * Web server (HTTP, front-facing apps)
-            * Worker (background job processing)
-    * Deployment Options : You can deploy via: ZIP file upload (via console or CLI), GitHub / CodePipeline, EB CLI, CI/CD
-    * EB stores app versions in S3 under the hood
-    * You can tweak all deployement options in the .ebextensions file, eb console, eb cli
-
-* AWS Serverless Application Model : It’s a framework + syntax + tooling for building serverless apps on AWS
-    * You can:
-        * Define Lambda, API Gateway, DynamoDB, SQS, SNS, etc. in a simple YAML file
-        * Build + test locally
-        * Deploy with a single command
-        * You must use an S3 bucket when deploying (SAM uploads artifacts there)
-
-* AWS Lambda : Serverless compute service → run code without managing servers
-    * You can only increase the memory of a lambda function
-    * You write the code → Lambda handles provisioning, scaling, fault tolerance
-    * Pay only for:
-        * Invocation count
-        * Execution duration
-    * Execution Model : 
-        * Cold Start: First request spins up container (slower)
-        * Warm Start: Reuses existing container (fast)
-    * Timeout limit = 15 mins max
-    * Use Layers to share code/dependencies
-    * Use Environment Variables to config your function
-    * A Lambda function alias is like a named pointer to a specific version of a Lambda function, allowing you to manage deployments (like dev/prod) and route traffic between versions
-    	* Example : my-function:PROD
-    * lambda uses /tmp directory to store temporary files that will be deleted in the future
-    * Access the unique request ID for each invocation using : context.aws_request_id
-    * AWS Lambda Destinations let you define a success or failure target for asynchronous invocations.
-
-# CONTAINERS
-
-* AWS Copilot : CLI tool to deploy + manage containerized apps on AWS easily(ECR)
-    * If you see a question about deploying Docker apps to ECS with minimal config, Copilot is the answer
-    * Know it handles:
-        * Docker build + push to ECR
-        * Load balancer setup
-        * IAM + VPC + ECS cluster creation
-            * It simplifies CI/CD setup (CodePipeline)
-            * Ideal for Docker devs who want AWS-native deployments
-
-* Amazon Elastic Container Registry (Amazon ECR) : A fully managed Docker container registry for AWS
-    * ECR supports lifecycle rules to delete old images (e.g., keep last 5, delete rest)
-
-* Amazon ECS : AWS’s native container orchestration platform
-    * Runs Docker containers on:
-        * Fargate (serverless)
-        * EC2 (self-managed VMs)
-    * Cluster
-        * A logical grouping of container instances or Fargate capacity
-        * Can run on EC2 or Fargate
-    * Task Definition : A blueprint for your app, Defines:
-        * Docker image
-        * CPU/memory
-        * Env vars
-        * Volumes
-        * Networking
-        * IAM roles
-    * Task :  A running instance of a task definition
-    * Service : Keeps a specified number of tasks running
-    * IAM with ECS : 
-        * Execution Role = ECS uses it to pull image from ECR, write logs, etc.
-        * Task Role = Container assumes this role to access S3, DynamoDB, etc.
-
-* Amazon EKS : AWS-managed Kubernetes
-    * Runs upstream K8s clusters on AWS
-    * If you see "Kubernetes YAML", "multi-cloud portability", or "use existing Helm chart" — it's EKS. If the dev wants “easy Docker deploys” or “simple backend” — go with ECS or Lambda.
-
-# DATABASE
-
-* Amazon Aurora : AWS’s high-performance relational DB, serverless option
-    * compatible with MySQL and PostgresQL
-    * Aurora has replication + failover + read scaling built-in
-    * Aurora Global DB enables cross-region DR
-
-* Amazon RDS : managed relational DB service
-    * Supports: MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Aurora
-    * Handles: Backups, Patching, Monitoring ,Scaling 
-    * DB Instance : A managed database server
-    * DB Snapshot : Manual or automatic backups of your DB instance, Supports point-in-time restore
-    * Read Replicas : Offload read traffic for scalability, Only available for MySQL, Postgres, MariaDB, and Aurora, Can be promoted to standalone DBs
-    * Read Replicas = Scale reads, not HA
-    * Multi-AZ = High Availability, not performance
-
-* Amazon DynamoDB : managed NoSQL key-value + document DB
-    * Serverless, scalable, fast AF (single-digit ms latency)
-    * Use partition key (and optional sort key) for schema
-    * Supports on-demand & provisioned throughput
-    * DAX = in-memory cache, microsecond reads
-    * DynamoDB Streams : Triggers on item-level changes (used w/ Lambda)
-    * Global Tables for multi-region sync
-    * lsi is querying for info from partion key and sort but gsi is query for info from other attributes
-    * Transactions
-	* Supports ACID transactions
-	* Use TransactWriteItems and TransactGetItems
-	* Max 25 operations per transaction
-    * TTL (Time to Live)
-	* Automatically deletes items past a certain timestamp
-	* Doesn’t delete immediately — eventually consistent
-	* Good for expiring session data, temp data
-    * What is UnprocessedKeys?
-	* When you use BatchGetItem or BatchWriteItem, DynamoDB may not process all requested items in a single request due to:
-		* Throttling (hitting RCU/WCU limits)
-		* Item size limits or request limits
-		* Temporary internal issues
-	* Those unprocessed items are returned in the UnprocessedKeys response object.
- 	* Retry strategy : Use exponential backoff + jitter(randomized delay) 	
-
-* Amazon ElastiCache : fully managed in-memory data store
-    * Redis  → caching + pub/sub + leaderboard + session store, Ideal for frequently accessed, complex structured data (like leaderboard-style rankings or sorted sets)
-    * Memcached → simple, fast caching, scalable, no persistence, does NOT support encryption at rest (only in transit).
-    * Boosts performance, Reduces DB strain, Used in real-time apps
-    * Use ElastiCache when data is ephemeral (cache)
-
-* Amazon MemoryDB : managed in-memory DB, Redis-compatible
-    * Use MemoryDB when you need in-memory performance + full durability
-    * Multi-AZ cluster with synchronous writes
-    * Stores data in in-memory nodes and durably replicates across AZs
-
-# DEVELOPER TOOLS
-
-* AWS Amplify : AWS’s toolkit + hosting platform for building full-stack apps FAST
-    * You push code → Amplify builds → Deploys to global CDN → HTTPS + custom domain ready
-    * Host web/mobile apps
-    * Add backend features like auth, API, DB, storage 
-    * Support CI/CD + custom domains
-
-* AWS CodePipeline : 
-    * CodePipeline = AWS’s fully managed CI/CD service
-    * It automates the build → test → deploy steps for your code
-    * [ Source ] → [ Build ] → [ Test (optional) ] → [ Deploy ]
-    * Supports manual approvals
-
-* AWS CodeBuild : CodeBuild = AWS’s fully managed build service
-    *  It compiles your source code, runs tests, produces build artifacts (like zip, jar, docker image).
-    * Supports environment variables
-    * Pricing is based on build duration
-    * Can build Docker images & push to ECR
-    * Integrates with CodePipeline, GitHub, CodeCommit
-
-* AWS CodeDeploy : AWS’s fully managed deployment service
-    * It automates deploying your app to:
-        * EC2 instances
-        * On-prem servers
-        * Lambda functions
-        * ECS services
-    * Deployment Types :
-        * In-place
-        * Blue/Green
-        * Canary
-        * Linear
-        * All-at-once
-    * Add pre/post hooks via Lambda functions for: Smoke testing, Logging, Feature flags
-    * In an AWS CodeDeploy in-place deployment, the hook run order is: ApplicationStop → BeforeInstall → AfterInstall → ApplicationStart → ValidateService.
-
-* AWS CodeArtifact : fully managed artifact repository service
-    * It stores build artifacts like:
-        * Libraries
-        * Packages
-        * Dependencies
-
-* AWS CodeGuru : AI-powered code reviewer + performance profiler
-
-* AWS X-Ray : distributed tracing service, Helps you visualize, trace, and debug complex requests as they pass through multiple AWS services.
-    * Service Map → Visual flow of services + latencies
-    * Trace List → Every invocation/request with status
-    * Annotations & Metadata → Add custom tags to traces (e.g. user ID, order ID)
-    * Analytics → Filter traces (e.g. show all 5xx errors in last 1hr)
-
-# MANAGEMENT AND GOVERNANCE
-
-* AWS AppConfig : AWS service for managing & deploying application configuration safely
-    * Lets you:
-        * Manage app configs separately from code
-        * Deploy configs gradually (think: canary, linear, all-at-once)
-        * Monitor for errors & rollback if things break
-    * Configs stored in hosted profile / S3 / SSM / SecretsManager
-
-* AWS CloudTrail : service that records all AWS API calls & actions across your account
-    * Stores logs in S3, sends to CloudWatch Logs
-
-* AWS CloudFormation : Infrastructure as Code (IaC) service for AWS
-    * Stacks : A deployed instance of a template (the real infra)
-    * Change Sets : Preview updates to a stack before applying them
-    * Rollback : Auto-rollback if deployment fails
-    * Nested Stacks : Break large templates into smaller reusable ones
-    * Drift Detection : See if someone changed the infra outside the template
-    * StackSets : Deploy infra across multiple accounts/regions
- 
-      	| Section      | What it does                                             |
-	| ------------ | -------------------------------------------------------- |
-	| `Parameters` | Take user input (e.g., region, name)                     |
-	| `Resources`  | Define actual AWS resources                              |
-	| `Outputs`    | Export info like bucket name, ARNs, etc.                 |
-	| `Mappings`   | Region-specific values                                   |
-	| `Conditions` | Create resources only if condition is met                |
-	| `Metadata`   | Extra info, not used by engine                           |
-	| `Transform`  | Include macros like `AWS::Serverless-2016-10-31` for SAM |
-
-  * Useful Functions (aka "Intrinsics")
-	| Function                 | Description                            |
-	| ------------------------ | -------------------------------------- |
-	| `!Ref`                   | Reference to a parameter/resource      |
-	| `!GetAtt`                | Get attribute (like ARN) of a resource |
-	| `!Sub`                   | String substitution (`${}`)            |
-	| `!Join`                  | Join strings                           |
-	| `!If`, `!Equals`, `!Not` | Conditions                             |
-	| `!ImportValue`           | Cross-stack output import              |
-	| `!FindInMap`             | Lookup in `Mappings`                   |
+- Stateless compute. Event-driven.
+- Triggers: API Gateway (sync), S3/SNS (async), SQS/Kinesis (poll-based).
+- Concurrency: default limit, provisioned concurrency available.
+- Handle retries, idempotency (e.g., using request IDs).
+- /tmp = 512MB local storage.
+- Timeout: Max 15 mins.
+- Deployment: .zip or container image.
+- Billing: Per invocation + execution time.
+- Integrates: API Gateway, ALB, S3, DynamoDB, CloudWatch.
+    - Execution : 
+        - Cold Start: New container (slower).
+        - Warm Start: Reused container (faster).
+- Configuration :  
+    - Layers: Share code/dependencies.
+    - Env Vars: Config without code changes (KMS encryption possible).
+    - Versions: Immutable snapshots.
+    - Aliases: Named pointer to version (supports canary deployments).
+- Invocation Types : 
+    - Synchronous : 
+        - Caller waits for result -> Errors handled on client side 
+        - Services: API Gateway, ALB, CLI, SDK, Lambda@Edge.
+    - Asynchronous : 
+        - Event queued, retried up to 3 times.
+        - Idempotent code recommended.
+        - DLQ for failed events.
+        - Services: S3, SNS, EventBridge.
+- Destinations : 
+    - Lambda Destinations enable routing of asynchronous invocation results and failures to various AWS Services.
+    - Async success/failure → SQS, SNS, Lambda, EventBridge. DLQ handles only failures.
+- Permissions : 
+    - IAM execution role required (best: 1 role per function).
+    - Resource policies allow cross-account/service invokes.
+- Monitoring : 
+    - CloudWatch Logs & Metrics: Invocations, duration, errors, throttles & X-Ray: Tracing (enable active tracing).
+- Lambda@Edge : Runs at CloudFront edge → low latency.
+- Performance : 
+    - More RAM = more CPU.
+    - Execution context reused → cache connections.
+    - Persistent storage → use S3 or EFS.
+- Access the unique request ID for each invocation using : context.aws_request_id
 
 
+## API Gateway
 
-* Amazon CloudWatch : AWS’s monitoring + observability service
-    * Metrics : Tracks performance (CPU, memory, request count, latency)
-    * Logs : Collects logs from Lambda, ECS, EC2, apps, etc
-    * Alarms : Sends alerts if metrics breach thresholds
-    * Dashboards : Custom visualizations of metrics
-    * Insights : Query logs (like SQL) for debugging
-    * Events (now EventBridge) : Triggers on events like state changes
+- REST APIs (more features), HTTP APIs (faster, cheaper), WebSocket APIs.
+- Handles routing, security, authentication, throttling, caching, and monitoring without managing servers.
+- Stages = dev, test, prod. Supports stage variables(REST APIs only).
+- Authorizers: IAM, Cognito, Lambda.
+- Caching supported (REST only).
+- Supports request/response mapping.
+- OpenAPI Support
+- CORS Support
+- Amazon API Gateway supports mock integrations, which allow you to simulate backend behavior without actually calling any backend service
 
-* Amazon CloudWatch Logs : centralized service to collect, store, monitor, and analyze log files from AWS resources + your apps
-    * Log Group : Logical container for logs (e.g. /aws/lambda/my-func)
-    * Log Stream : Sequence of logs from one resource instance (e.g. one Lambda instance)
-    * Log Event : One single log line or message ({"timestamp": ..., "message": ...})
-    * You can:
-        * Export logs to S3 (long-term storage)
-        * Stream logs to Elasticsearch/OpenSearch for advanced analytics
-        * Forward logs to Lambda for custom processing
-    * Retention is configurable (1 day → forever)
-    * IAM required to read/write/stream logs
+## SQS
 
-* AWS Systems Manager Parameter Store : Fully managed AWS service for storing config data + secrets (optional).
-    * Stores key-value pairs for:
-        * App configs (env vars, ARNs, URLs)
-        * DB strings, API keys (via SecureString)
-        * Passwords (via SecureString)
+- Queue-based decoupling.
+- Flow: Producer → [SQS Queue] → Consumer (polls messages).
+- Messages stored durably until processed & deleted. If processing fails → message becomes visible again for retry.
+- No native message filtering → use SNS or EventBridge for that.
+- Standard = at-least-once, best-effort order. FIFO = exactly-once, ordered.
+- Visibility timeout: time to process before reappears.
+- DLQ: messages move after maxReceiveCount.
+- Lambda can poll SQS (event source mapping).
+- Message & Queue Properties : 
+    - Retention: 4 days (default) → max 14 days.
+    - Message Size: ≤ 256 KB.
+    - Delivery: At-least-once (duplicates possible).
+    - Ordering: Best-effort (may arrive out of order, unless FIFO queue).
+    - Throughput: Unlimited messages & TPS (Standard queue).
+    - Latency: < 10 ms typical.
+    - Encryption at rest via KMS.
+- Long Polling : Consumer waits (up to 20s) for new messages instead of constant polling. Reduces API calls & cost, lowers latency.
+- For Large Message Handling store payload in S3, send pointer via SQS 
+- Send/receive/delete multiple msgs in one API call → cost & performance benefits.
 
-* AWS Cloud Development Kit : It lets you define AWS infrastructure using real programming languages (not YAML or JSON).
+## SNS
 
-# NETWORK AND CONTENT DELIVERY 
+- Pub/Sub. Fan-out to Lambda, SQS, HTTP endpoints.
+- Message persistence is NOT guaranteed for SNS
+- Filtering: Subscribers can set filter policies (JSON) to receive only matching messages.
+- Supports push-based delivery (no polling by subscribers).
+- Subscriber Types : 
+    - Other AWS Services
+    - Other: Email, SMS, HTTP/S endpoints.
+    - Can integrate with AWS event sources (e.g., S3 event → SNS).
+- Encryption : In-transit (TLS), At-rest (KMS), Client-side encryption (optional)
 
-* Amazon CloudFront : AWS’s Content Delivery Network (CDN)
-    * Can serve from S3, EC2, ALB, API Gateway, or custom origin
-    * Custom error pages (404.html etc)
+## DynamoDB
 
-* Elastic Load Balancing (ELB) : AWS service that automatically distributes incoming traffic across multiple targets (EC2, containers, IPs, Lambda)
-    * ALB is used for HTTP/HTTPS, path/host-based routing
-    * NLB is for ultra-low-latency TCP/UDP use cases
-    * ELB supports EC2, ECS, Lambda, IPs as targets
-    * Health checks remove bad targets automatically
-    * NLB supports TLS pass-through, static IPs, cross-zone load balancing
-	
-* Amazon Route 53 : AWS’s scalable and highly available Domain Name System (DNS) + health checking + domain registration service, Routing policies, Traffic control, Global failover.
-    * Simple : Default — one record = one target
-    * Weighted : A/B testing: 70% to us-east-1, 30% to us-west-2
-    * Latency-based : Route users to the lowest-latency AWS region
-    * Failover : Primary → Secondary if Primary health check fails
-    * Geolocation : Route based on user location (e.g. India → Mumbai, US → Ohio)
-    * Geoproximity : Weighted + bias by distance (Traffic Flow only)
-    * Multivalue : Return multiple healthy IPs (basic load balancing)
+- NoSQL, millisecond reads/writes.
+- GSI (global index) vs LSI (local index).
+- Query (fast, by key) vs Scan (slow, all items).
+- TTL for auto-expiry.
+- DynamoDB Streams capture table changes in order so you can process them in near real time with consumers like Lambda. 
+- Strongly consistent or eventual reads.
+- Write throughput = WCU, read = RCU.
+- DAX: Fully managed, in-memory cache, microsecond latency, solves hot-key issues, TTL default 5 min.
+- Performance & Partitioning : 
+    - Choose high-cardinality partition keys to avoid hot partitions.
+    - Use suffix/prefix hashing to distribute load evenly.
+    - Unprocessed items generate UnprocessedKeys response object when using BatchGetItem or BatchWriteItem, Solution : Retry throttled requests with exponential backoff + jitter.
+- BatchWrite/BatchGet reduce requests.
+- Transactions : 
+    - ACID across multiple items/tables.
+    - Max 25 operations per transaction.
+    - Use TransactWriteItems / TransactGetItems.
+    - Costs 2× RCU/WCU.
 
-* Amazon Virtual Private Cloud (Amazon VPC) : your own private network inside AWS, Control ingress/egress with firewall rules with security grps and NACLs
-    * CIDR Block : The IP range for your VPC (e.g., 10.0.0.0/16)
-    * Subnet : Smaller slices inside your VPC (can be public or private)
-    * Route Table : Controls traffic routing between subnets + internet
-    * Internet Gateway (IGW) : Enables internet access for public subnets
-    * NAT Gateway : Lets private subnets talk out to internet securely
-    * Security Group : Firewall attached to resources (stateful)
-    * Network ACL : Firewall at subnet level (stateless)
-    * VPC Peering : Connect 2 VPCs together
-    * Endpoints : Private access to AWS services inside VPC
-        * Gateway : S3, DynamoDB (route table-based)
-            * Interface : Other AWS services (ENI-based)
+## EventBridge
 
-* AWS API Gateway : It’s a fully managed service that lets you:
-    * Create, publish, secure, and monitor REST, WebSocket, and HTTP APIs
-    * Basically, you put API Gateway in front of your services (like Lambda, EC2, DynamoDB, etc.)
-    * It handles routing, security, throttling, caching, etc.
-    * Enforce authentication, rate limiting, monitoring, caching, and throttling
-    * Stage Variables = key-value pairs per stage, Only for REST APIs, NOT HTTP APIs, Useful for multi-environment deployments
-    * Amazon API Gateway supports mock integrations, which allow you to:
-	* Simulate backend behavior without actually calling any backend service
-	* Configure request and response mapping templates to return predefined responses
-	* This is perfect for integration testing, development, or staging environments
+- Serverless event bus for routing events between AWS services, SaaS apps, and custom apps.
+- Supports event filtering, routing, and transformation.
+- Better than SNS for microservices.
+- Default bus for AWS events, custom bus for app events.
+- Event Sources : 
+    - AWS Services → e.g., EC2 state changes, S3 uploads, CodeBuild failures.
+    - Custom Applications → send app-specific JSON events.
+    - SaaS Applications → via Partner Event Buses (e.g., Zendesk, Datadog, Auth0).
+- Targets: Lambda, Step Functions, SNS / SQS, API Gateway, Event Buses (incl. cross-account), ECS tasks, Batch jobs, Kinesis, CodePipeline, SSM Automation.
+- Event Buses : 
+    - Default Bus → Receives AWS service events automatically.
+    - Custom Bus → For your own applications/events.
+    - Partner Bus → Direct integration with SaaS providers.
+    - Cross-Account Access → Resource-based policies allow other accounts to send events.
+- Schedule Events (CRON) : 
+    - Event Bus : Pipeline for events. Types: default, custom, or partner.
+    - Event → JSON describing something that happened.
+    - Rule → Pattern to match events, define routing.
+    - Target → Destination action (e.g., Lambda, SQS, Step Functions, API Gateway).
 
-# SECURITY, IDENTITY AND COMPLIANCE
+## Step Functions
 
-* AWS Certificate Manager (ACM) : manage SSL/TLS certs for free, Automatically renews them, Deploys them to services like CloudFront, ALB, API Gateway, ELB, etc, 
-    * Works with both public and private certificates
-    * ACM checks that DNS record to verify domain ownership
-    * if u want to load certs they have to be in us-east-1 even if ur app is in another region
+- Serverless workflow orchestration — coordinates AWS services & custom code.
+- Workflow orchestration, JSON state machine.
+- State Types : 
+    - Task → Runs Lambda, ECS, Batch, DynamoDB, SNS/SQS, API Gateway, etc.
+    - Choice → Conditional branching.
+    - Fail / Succeed → End workflow with failure/success.
+    - Pass → Pass data without performing work.
+    - Wait → Delay execution.
+    - Map → Run steps for each item in a dataset.
+    - Parallel → Run branches concurrently.
+- Error Handling : 
+    - Retry → Set attempts, delay, backoff rate, max attempts (for transient errors).
+    - Catch → Define alternate flow on error, pass error info via ResultPath.
+- Use for complex sequencing and error handling.
+- Express vs Standard: short-lived vs long-running.
 
-* AWS IAM (Identity and Access Management) : control access to AWS services & resources
+## Kinesis
 
-* AWS Private Certificate Authority (Private CA) : create your own private certsf
+- Data Streams = low-latency real-time processing.
+- Lambda can consume from shards.
+- Good for clickstreams, logs.
+- Firehose auto-loads to S3, Redshift.
+- shard capacity = 1MB/s in, 2MB/s out, 5 TPS reads
 
-* AWS WAF (Web Application Firewall) : protects your web apps and APIs from common attacks by filtering HTTP/S traffic at the edge or app layer.
+## S3
 
-* Amazon Cognito : Fully managed service for authenticating, authorizing, and managing users for your apps.
-    *  It’s your app’s built-in login system — no need to roll your own auth
-    * Cognito can:
-        * Sign up / sign in users
-        * Handle password resets, MFA, email/phone verification
-        * Integrate with third-party IdPs (Google, Facebook, SAML, OIDC)
-        * Issue JWT tokens (ID, access, refresh)
-    * Cognito Identity Pools : Give users access to AWS services — securely
-    * Cognito User Pools : Manage your users like user sign up / sign in
+- Object storage. 
+- Supports SSE-S3, SSE-KMS, Enforce encryption via bucket policy (x-amz-server-side-encryption).
+- Security : IAM policies (user-based), bucket policies (resource-based), ACLs.
+- Versioning and lifecycle rules.
+- Triggers: Lambda, EventBridge.
+- Consistency: read-after-write.
+- Tiering: Standard, IA, One Zone, Glacier.
+- Lifecycle Rules : Transition objects between storage classes (e.g., Standard → IA → Glacier), Expire/delete old versions, Filter by prefix or tags.
+- Supports Event Notifications
+- Replication : CRR (cross-region) / SRR (same region), Requires versioning on both source & destination, IAM permissions needed, Use cases: compliance, DR, log aggregation.
+- Supports Transfer Acceleration → Use edge locations to speed uploads/downloads.
+- Requester Pays → Downloader pays data transfer cost.
+- Presigned URLs → Temporary GET/PUT access (console: up to 12h, CLI: up to 7d).
+- Access Points → Custom endpoints w/ specific policies (internet or VPC).
+- Object Lambda → Modify data on retrieval via Lambda (e.g., redact, transform).
+- CORS : 
+    - Controls browser cross-origin requests.
+    - Requires explicit permission via CORS config in S3.
 
-* AWS STS (Security Token Service) : It gives you temporary security credentials (access key, secret key, session token) to IAM users, Federated users (e.g., Google, SAML, Cognito), Cross-account roles, Applications needing short-term AWS access
-    *  so:
-        * You can securely access AWS resources
-        * You don’t need to hard-code long-term IAM keys
-    * AssumeRole : Assume a role from same or another account (most common!)
-    * AssumeRoleWithWebIdentity = for Cognito/mobile apps
-    * GetSessionToken = add MFA to sessions
+## Architectural Patterns
 
-* AWS KMS(Key Management Service) : A managed service that enables you to easily encrypt your data. KMS provides a highly available key storage, management, and auditing solution for you to encrypt data within your own applications and control the encryption of stored data across AWS services.
-	* AWS-managed CMKs (free, automatic, limited control)(can’t modify their policies, share them across accounts, or see detailed usage logs)
-	* Customer-managed CMKs
-		* (full control, logging, rotation)
-  		* (Supports cross-account access)
+- Loose coupling: SQS, SNS, EventBridge.
+- Microservices: use APIs or messaging.
+- Choreography (event-driven) vs orchestration (Step Functions).
+- Idempotency = safe retries.
+- Stateless services = easier to scale.
 
-* AWS Secrets Manager : Fully managed AWS service for storing, managing, and rotating secrets securely. Secrets = API keys, DB creds, tokens, OAuth secrets, private keys, etc.
+# Security (26%)
 
-# STORAGE
+## IAM
 
-* Amazon Elastic Block Store (EBS) : block storage for EC2, Snapshots are backups of EBS volumes stored in S3
-* Amazon Elastic File System (EFS) : fully managed NFS file system
-* Amazon S3 (Simple Storage Service) : object storage for any data type
-        * Bucket : Top-level folder — where your files live (global namespace)
-        * Object : The actual file you store (has key + metadata + data)
-        * Key : File name inside the bucket (like img/logo.png)
-        * Region : Bucket is created in one AWS region
-        * Prefix : Path inside the key (like a folder structure)
-    * Versioning — keep multiple versions of the same file
-    * Lifecycle Rules — move files to IA/Glacier after N days
-    * Event Notifications — trigger Lambda/SNS/SQS on upload/delete
-    * Static Website Hosting — serve HTML/CSS/JS from your bucket
-    * Presigned URLs — temporary access to private files
-    * Multi-part Upload — break big files into chunks (e.g. 10 GB video)
-    * Cross-Region Replication — copy files to another region auto-magically
-    * Requester Pays — force downloader to pay the cost
-    * An S3 Access Point is a custom endpoint with its own access policy that simplifies and controls access to an S3 bucket for specific users, applications, or VPCs.
-* Amazon S3 Glacier : low-cost archival storage
+- Users, groups, roles. Use roles, not hardcoded credentials.
+- Policies: identity-based (who can do what), resource-based (who can access resource).
+- Roles : Temporary creds via STS for services, cross-account, federation.
+- Least privilege = best practice.
+- Trust policy = who can assume a role.
+- STS = temporary creds.
 
+## Authentication
+
+- Cognito Identity Pools : Give users access to AWS services — securely
+- Cognito User Pools : Manage your users like user sign up / sign in
+- Integrate with third-party IdPs (Google, Facebook, SAML, OIDC)
+- API Gateway can use Cognito or Lambda authorizer.
+
+## Authorization
+
+- JWT = bearer token. Validate signature and claims.
+- IAM policies with conditions.
+- Role Based Access Control with Cognito groups.
+
+## Encryption
+
+- At rest: SSE-S3, SSE-KMS, SSE-C, RDS encryption.
+- In transit: TLS/SSL (HTTPS).
+- KMS: customer-managed vs AWS-managed keys.
+- Key rotation (customer-managed: 1 year, AWS-managed: auto every 3).
+- CMK = customer master key.
+- Envelope encryption: encrypt data key with CMK.
+- Client-side encryption: You encrypt before uploading to AWS.
+
+## Secrets Management
+
+- Secrets Manager: stores and rotates secrets.
+- Parameter Store: secure strings, no auto-rotation.(for config data)
+- Avoid env vars for secrets unless encrypted.
+
+## Secure Practices
+
+- No hardcoded creds or tokens.
+- Audit IAM actions with CloudTrail.
+- Use MFA, SCPs, permission boundaries (advanced).
+
+# Deployment (24%)
+
+## CodePipeline
+
+- Orchestration: source → build → test(optional) → deploy.
+- Supports approvals, notifications.
+- Triggered by repo push or manual.
+
+## CodeBuild
+
+- Compiles, tests code.
+- buildspec.yml defines build steps.
+- Securely access env variables and secrets.
+
+## CodeDeploy
+
+- Deployment to EC2, Lambda, ECS.
+- In-place(ApplicationStop → BeforeInstall → AfterInstall → ApplicationStart → ValidateService), blue/green, All-at-once.
+- For Lambda: supports linear and canary.
+
+## Deployment Strategies
+
+- All-at-once: fast, risky.
+- Rolling: update in batches.
+- Blue/green: parallel envs, switch traffic.
+- Canary: test new version with % of users.
+- Use stages (API Gateway), aliases (Lambda), stacks (CFN).
+
+## IaC Tools
+
+- CloudFormation: declarative templates (YAML/JSON).
+- AWS SAM: shorthand for Lambda + API Gateway + DynamoDB.
+- CDK: write infra in Python, TypeScript, etc.
+- Copilot: ECS/Fargate deployment.
+- Amplify: frontend + backend CI/CD for web apps.
+
+## Artifact Repositories
+
+- CodeArtifact: package manager (npm, Maven).
+- ECR: Docker image storage.
+
+## Configuration Management
+
+- AppConfig: dynamic config, feature flags.
+- Parameter Store: config + secrets.
+- Env vars: easy, but not secure for secrets.
+
+# Troubleshooting and Optimization (18%)
+
+## Monitoring
+
+- CloudWatch: metrics, alarms, dashboards.
+- Custom metrics via PutMetricData or EMF.
+- Logs: view logs from Lambda, ECS, EC2.
+
+## CloudWatch Logs Insights
+
+- Search logs: filter, stats, fields.
+- Great for pinpointing errors.
+
+## X-Ray
+
+- Distributed tracing.
+- Visualize latency across services.
+- Service map and annotations.
+
+## Common Errors
+
+- 4XX: client errors (403, 404, 429).
+- 5XX: server errors (500, 502, 503).
+- Lambda timeouts, out-of-memory, throttling.
+- DynamoDB throughput exceeded = backoff.
+
+## Optimization
+
+- Use cache (ElastiCache, DAX).
+- Batch operations (SQS, DynamoDB).
+- CloudFront for global content.
+- API Gateway cache for REST APIs.
+
+## Concurrency
+
+- Lambda scales automatically, but watch for concurrency limits.
+- Provisioned concurrency reduces cold starts.
+
+## Profiling
+
+- CodeGuru Profiler: find hotspots in code.
+- Right-size memory/CPU for Lambda or EC2.
+
+## Debugging Tools
+
+- Logs + X-Ray = root cause.
+- Use trace ID/correlation ID for tracking.
+
+## Notifications
+
+- SNS for alerts.
+- Alarms on errors, high latency, usage thresholds.
+
+## Service Quotas
+
+- Know limits: Lambda timeout (15 min), SQS size (256KB), Lambda concurrency (default 1000), DynamoDB WCU/RCU throttling.
+- Use Trusted Advisor or Service Quotas to check.
