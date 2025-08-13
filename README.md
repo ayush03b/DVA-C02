@@ -1,3 +1,22 @@
+# AWS Certified Developer Associate (DVA-C02) Study Notes
+
+*Last Updated: August 2025 - Based on latest exam structure*
+
+## Exam Overview
+- **Duration**: 130 minutes
+- **Questions**: 65 scored questions (multiple choice and multiple response)
+- **Passing Score**: 720/1000
+- **Valid for**: 3 years
+- **Format**: Computer-based testing
+
+## Domain Breakdown (Updated 2024-2025):
+1. **Development with AWS Services** - 32%
+2. **Security** - 26%
+3. **Deployment** - 24% 
+4. **Troubleshooting and Optimization** - 18%
+
+---
+
 # Development with AWS Services (32%)
 
 ## Lambda :
@@ -42,7 +61,12 @@
     - Execution context reused → cache connections.
     - Persistent storage → use S3 or EFS.
 - Access the unique request ID for each invocation using : context.aws_request_id
-
+- **Runtime Support**: Python 3.12, Node.js 20.x, Java 21, .NET 8, Go 1.x, Ruby 3.3
+- **New Features (2024-2025)**:
+  - Lambda SnapStart for Java (faster cold starts)
+  - Advanced logging controls
+  - Function URLs for simple HTTP(S) endpoints
+  - Enhanced monitoring with CloudWatch Lambda Insights
 
 ## API Gateway
 
@@ -55,6 +79,11 @@
 - OpenAPI Support
 - CORS Support
 - Amazon API Gateway supports mock integrations, which allow you to simulate backend behavior without actually calling any backend service
+- **New Features (2024-2025)**:
+  - Enhanced request validation
+  - Improved WebSocket API capabilities
+  - Better integration with AWS WAF v2
+  - Enhanced custom domain names with ACM
 
 ## SQS
 
@@ -77,6 +106,11 @@
 - Long Polling : Consumer waits (up to 20s) for new messages instead of constant polling. Reduces API calls & cost, lowers latency.
 - For Large Message Handling store payload in S3, send pointer via SQS 
 - Send/receive/delete multiple msgs in one API call → cost & performance benefits.
+- **New Features (2024-2025)**:
+  - Enhanced DLQ functionality
+  - Improved FIFO queue throughput (up to 3000 TPS per API)
+  - Better integration with Lambda event source mapping
+  - Enhanced message filtering capabilities
 
 ## SNS
 
@@ -89,6 +123,11 @@
     - Other: Email, SMS, HTTP/S endpoints.
     - Can integrate with AWS event sources (e.g., S3 event → SNS).
 - Encryption : In-transit (TLS), At-rest (KMS), Client-side encryption (optional)
+- **New Features (2024-2025)**:
+  - Enhanced message delivery status
+  - Improved mobile push notifications
+  - Better integration with EventBridge
+  - Enhanced message archiving and replay
 
 ## DynamoDB
 
@@ -110,6 +149,13 @@
     - Max 25 operations per transaction.
     - Use TransactWriteItems / TransactGetItems.
     - Costs 2× RCU/WCU.
+- **New Features (2024-2025)**:
+  - Enhanced Global Tables v2
+  - Improved DynamoDB Accelerator (DAX)
+  - Better point-in-time recovery
+  - Enhanced contributor insights
+  - Import from S3 functionality
+  - Zero-ETL integration with Amazon Redshift
 
 ## EventBridge
 
@@ -132,6 +178,12 @@
     - Event → JSON describing something that happened.
     - Rule → Pattern to match events, define routing.
     - Target → Destination action (e.g., Lambda, SQS, Step Functions, API Gateway).
+- **New Features (2024-2025)**:
+  - Enhanced schema discovery and registry
+  - Improved cross-region replication
+  - Better event replay capabilities
+  - Enhanced partner integrations
+  - Improved event source mapping
 
 ## Step Functions
 
@@ -150,6 +202,12 @@
     - Catch → Define alternate flow on error, pass error info via ResultPath.
 - Use for complex sequencing and error handling.
 - Express vs Standard: short-lived vs long-running.
+- **New Features (2024-2025)**:
+  - Enhanced Workflow Studio (visual editor)
+  - Improved error handling and retry mechanisms
+  - Better integration with EventBridge Scheduler
+  - Enhanced testing and debugging capabilities
+  - Support for HTTP endpoints as tasks
 
 ## Kinesis
 
@@ -158,6 +216,11 @@
 - Good for clickstreams, logs.
 - Firehose auto-loads to S3, Redshift.
 - shard capacity = 1MB/s in, 2MB/s out, 5 TPS reads
+- **New Features (2024-2025)**:
+  - Enhanced fan-out for faster processing
+  - Improved shard-level metrics
+  - Better integration with Lambda
+  - Enhanced data analytics capabilities
 
 ## S3
 
@@ -179,6 +242,28 @@
 - CORS : 
     - Controls browser cross-origin requests.
     - Requires explicit permission via CORS config in S3.
+- **New Features (2024-2025)**:
+  - Enhanced S3 Express One Zone (high performance storage)
+  - Improved S3 Object Lambda
+  - Better integration with Amazon Macie
+  - Enhanced S3 Batch Operations
+  - Improved multi-region access points
+  - S3 Directory Buckets for high-performance workloads
+
+## Container Services (New Focus Area)
+
+### ECS (Elastic Container Service)
+- Fully managed container orchestration
+- Integration with Application Load Balancer
+- Service discovery with Route 53
+- Auto Scaling based on metrics
+- Fargate for serverless containers
+
+### ECR (Elastic Container Registry)
+- Private Docker registry
+- Integration with ECS, EKS, Lambda
+- Vulnerability scanning
+- Image signing and verification
 
 ## Architectural Patterns
 
@@ -198,6 +283,12 @@
 - Least privilege = best practice.
 - Trust policy = who can assume a role.
 - STS = temporary creds.
+- **New Features (2024-2025)**:
+  - Enhanced IAM Access Analyzer
+  - Improved IAM roles anywhere
+  - Better integration with AWS Organizations
+  - Enhanced policy validation
+  - Improved least privilege recommendations
 
 ## Authentication
 
@@ -205,6 +296,11 @@
 - Cognito User Pools : Manage your users like user sign up / sign in
 - Integrate with third-party IdPs (Google, Facebook, SAML, OIDC)
 - API Gateway can use Cognito or Lambda authorizer.
+- **New Features (2024-2025)**:
+  - Enhanced Cognito advanced security features
+  - Improved SAML and OIDC integration
+  - Better mobile SDK support
+  - Enhanced user migration capabilities
 
 ## Authorization
 
@@ -221,12 +317,23 @@
 - CMK = customer master key.
 - Envelope encryption: encrypt data key with CMK.
 - Client-side encryption: You encrypt before uploading to AWS.
+- **New Features (2024-2025)**:
+  - AWS KMS multi-Region keys
+  - Enhanced key policies and grants
+  - Better integration with CloudHSM
+  - Improved BYOK (Bring Your Own Key) support
+  - AWS Certificate Manager integration improvements
 
 ## Secrets Management
 
 - Secrets Manager: stores and rotates secrets.
 - Parameter Store: secure strings, no auto-rotation.(for config data)
 - Avoid env vars for secrets unless encrypted.
+- **New Features (2024-2025)**:
+  - Enhanced Secrets Manager integration with RDS
+  - Better cross-service secret sharing
+  - Improved secret versioning and rollback
+  - Enhanced audit capabilities
 
 ## Secure Practices
 
@@ -241,18 +348,33 @@
 - Orchestration: source → build → test(optional) → deploy.
 - Supports approvals, notifications.
 - Triggered by repo push or manual.
+- **New Features (2024-2025)**:
+  - Enhanced integration with third-party tools
+  - Improved parallel execution capabilities
+  - Better cost optimization features
+  - Enhanced failure handling and notifications
 
 ## CodeBuild
 
 - Compiles, tests code.
 - buildspec.yml defines build steps.
 - Securely access env variables and secrets.
+- **New Features (2024-2025)**:
+  - Enhanced build environments (Amazon Linux 2023)
+  - Better caching mechanisms
+  - Improved integration with CodeArtifact
+  - Enhanced security scanning integration
 
 ## CodeDeploy
 
 - Deployment to EC2, Lambda, ECS.
 - In-place(ApplicationStop → BeforeInstall → AfterInstall → ApplicationStart → ValidateService), blue/green, All-at-once.
 - For Lambda: supports linear and canary.
+- **New Features (2024-2025)**:
+  - Enhanced ECS deployment capabilities
+  - Better integration with Auto Scaling Groups
+  - Improved rollback mechanisms
+  - Enhanced health checks and monitoring
 
 ## Deployment Strategies
 
@@ -269,6 +391,10 @@
 - CDK: write infra in Python, TypeScript, etc.
 - Copilot: ECS/Fargate deployment.
 - Amplify: frontend + backend CI/CD for web apps.
+- **New Focus (2024-2025)**:
+  - **AWS Copilot**: Enhanced ECS/Fargate deployment with better local development
+  - **AWS App Runner**: New fully managed service for containerized applications
+  - **CDK v2**: Latest version with improved constructs and better TypeScript support
 
 ## Artifact Repositories
 
@@ -280,6 +406,11 @@
 - AppConfig: dynamic config, feature flags.
 - Parameter Store: config + secrets.
 - Env vars: easy, but not secure for secrets.
+- **New Features (2024-2025)**:
+  - Enhanced AppConfig with improved deployment strategies
+  - Better integration with feature flags
+  - Improved configuration validation
+  - Enhanced rollback capabilities
 
 # Troubleshooting and Optimization (18%)
 
@@ -338,3 +469,70 @@
 
 - Know limits: Lambda timeout (15 min), SQS size (256KB), Lambda concurrency (default 1000), DynamoDB WCU/RCU throttling.
 - Use Trusted Advisor or Service Quotas to check.
+
+## New Monitoring and Observability Features (2024-2025)
+
+### CloudWatch Application Insights
+- Automated application monitoring
+- Intelligent problem detection
+- Resource relationship mapping
+
+### AWS Distro for OpenTelemetry
+- Unified observability
+- Custom metrics and traces
+- Integration with multiple backends
+
+### Enhanced Container Monitoring
+- Container Insights for ECS/EKS
+- Better resource utilization tracking
+- Improved cost allocation
+
+## Key Updates for Exam Focus
+
+### Serverless-First Architecture
+- Emphasis on Lambda, API Gateway, DynamoDB
+- Event-driven patterns with EventBridge
+- Serverless containers with Fargate
+
+### Security Best Practices
+- Zero-trust architecture principles
+- Enhanced IAM policies and conditions
+- Secrets management automation
+
+### Cost Optimization
+- Right-sizing recommendations
+- Reserved capacity planning
+- Serverless cost modeling
+
+### DevOps Integration
+- Infrastructure as Code (IaC) emphasis
+- Automated testing and validation
+- Blue/green deployment patterns
+
+---
+
+## Exam Tips (2024-2025 Updates)
+
+1. **Focus Areas**: 
+   - Serverless architectures (40% of development questions)
+   - Container services integration
+   - Event-driven patterns
+   - Security automation
+
+2. **New Service Integrations**:
+   - App Runner for containerized apps
+   - EventBridge Scheduler
+   - Lambda SnapStart
+   - S3 Express One Zone
+
+3. **Common Scenarios**:
+   - Microservices communication patterns
+   - Error handling and retry logic
+   - Performance optimization techniques
+   - Security compliance automation
+
+4. **Hands-on Experience Required**:
+   - Building serverless applications
+   - Container deployment strategies
+   - CI/CD pipeline configuration
+   - Monitoring and troubleshooting
