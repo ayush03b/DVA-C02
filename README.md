@@ -142,7 +142,8 @@
 - Performance & Partitioning : 
     - Choose high-cardinality partition keys to avoid hot partitions.
     - Use suffix/prefix hashing to distribute load evenly.
-    - Unprocessed items generate UnprocessedKeys response object when using BatchGetItem or BatchWriteItem, Solution : Retry throttled requests with exponential backoff + jitter.
+    - Unprocessed items generate UnprocessedKeys response object when using BatchGetItem or BatchWriteItem.
+    - Retry throttled requests with exponential backoff + jitter.
 - BatchWrite/BatchGet reduce requests.
 - Transactions : 
     - ACID across multiple items/tables.
