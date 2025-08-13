@@ -23,7 +23,8 @@
 
 - Stateless compute. Event-driven.
 - Triggers: API Gateway (sync), S3/SNS (async), SQS/Kinesis (poll-based).
-- Concurrency: default limit, provisioned concurrency available.
+- Concurrency: default limit, provisioned concurrency available(Provisioned concurrency keeps Lambda instances warm and eliminates
+cold starts, even for VPC functions).
 - Handle retries, idempotency (e.g., using request IDs).
 - /tmp = 512MB local storage.
 - Timeout: Max 15 mins.
