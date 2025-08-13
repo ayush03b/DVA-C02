@@ -71,6 +71,7 @@ cold starts, even for VPC functions).
 - SAM CLI allows you to locally invoke and test Lambda functions before deploying to AWS.
 - Running locally with SAM CLI does not trigger a real AWS invocation, so no Lambda charge occurs.
 - Lambda must return successfully; otherwise, the same messages will be reprocessed until deleted or DLQ triggered.
+- Lambda supports container images up to 10 GB in size, enabling larger deployments.
 
 ## API Gateway
 
