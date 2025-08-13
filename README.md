@@ -149,6 +149,7 @@
     - Max 25 operations per transaction.
     - Use TransactWriteItems / TransactGetItems.
     - Costs 2× RCU/WCU.
+- supports eventual consistency for reads.
 - **New Features (2024-2025)**:
   - Enhanced Global Tables v2
   - Improved DynamoDB Accelerator (DAX)
