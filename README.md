@@ -44,7 +44,7 @@ cold starts, even for VPC functions).
         - Caller waits for result -> Errors handled on client side 
         - Services: API Gateway, ALB, CLI, SDK, Lambda@Edge.
     - Asynchronous : 
-        - Event queued, retried up to 3 times.
+        - Event queued, retried up to 2 times.
         - Idempotent code recommended.
         - DLQ for failed events.
         - Services: S3, SNS, EventBridge.
