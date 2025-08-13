@@ -224,6 +224,7 @@ cold starts, even for VPC functions).
   - Improved shard-level metrics
   - Better integration with Lambda
   - Enhanced data analytics capabilities
+- Kinesis does not remove records until checkpointed. If a batch fails, it is retried, leading to reprocessing.
 
 ## S3
 
