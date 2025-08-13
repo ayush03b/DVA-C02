@@ -85,6 +85,7 @@ cold starts, even for VPC functions).
   - Improved WebSocket API capabilities
   - Better integration with AWS WAF v2
   - Enhanced custom domain names with ACM
+- when requests exceed the rate limit API Gateway returns a 429 Too Many Requests error
 
 ## SQS
 
