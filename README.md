@@ -305,6 +305,7 @@ cold starts, even for VPC functions).
 - Cognito User Pools : Manage your users like user sign up / sign in
 - Integrate with third-party IdPs (Google, Facebook, SAML, OIDC)
 - API Gateway can use Cognito or Lambda authorizer.
+- The SDK’s credential provider chain automatically refreshes temporary credentials (e.g., from instance profiles or Cognito).
 - **New Features (2024-2025)**:
   - Enhanced Cognito advanced security features
   - Improved SAML and OIDC integration
